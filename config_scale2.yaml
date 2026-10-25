@@ -1,0 +1,27 @@
+model: "Qwen/Qwen3-0.6B"
+output_dir: "~/models/Qwen--Qwen3-0.6B-scale2"
+
+inference:
+  device: "cuda"
+  batch_size: 8
+  max_lengh: 512
+  flash_attn: false
+
+measurements:
+  # 測定を再利用するため保存（config.yaml との違いはここだけ＋global_scale）
+  save_path: "./eval_out/measurements.pt"
+  harmful_prompts: "./data/harmful.parquet"
+  harmless_prompts: "./data/harmless.parquet"
+  clip: 1.0
+
+ablation:
+  method: "full"
+  sparsify_method: "percentile"
+  quantile: 0.995
+  magnitude_threshold: 0.05
+  top_k: 3
+  global_scale: 2.0
+  layer_overrides:
+    24:
+      scale: 0.5
+      source_layer: 23
