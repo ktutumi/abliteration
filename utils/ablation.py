@@ -46,7 +46,7 @@ def get_layer_ablation_config(
             raw_refusal_dir = measurement_results[f"refuse_{source_idx}"]
             refusal_dir = sparsify_tensor(
                 tensor=raw_refusal_dir,
-                method=config.ablation.sparsify_method,
+                method=config.ablation.sparsify_method,  # type: ignore[arg-type]
                 threshold=(
                     config.ablation.magnitude_threshold
                     if config.ablation.sparsify_method == "magnitude"
@@ -102,7 +102,7 @@ def modify_shard_weights(
         except (ValueError, IndexError):
             continue
 
-        target_modules = ["o_proj", "down_proj"]  # Target modules
+        target_modules = ["o_proj", "down_proj", "out_proj"]  # Target modules
         is_target = any(m in key for m in target_modules) and key.endswith(".weight")
 
         if is_target:
@@ -132,6 +132,7 @@ def run_sharded_ablation(
     Output.header("Phase 2: Sharded Ablation & Weight Modification")
 
     # Prepare Output
+    assert config.output_dir is not None, "output_dir is required to save a model"
     output_path = Path(config.output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
