@@ -56,6 +56,10 @@ def load_config(config_path: str) -> ModelConfig:
     # Check for at least one output destination
     output_dir = raw_config.get("output_dir")
     measurements_save_path = raw_config.get("measurements", {}).get("save_path")
+    if output_dir:
+        output_dir = os.path.expanduser(output_dir)
+    if measurements_save_path:
+        measurements_save_path = os.path.expanduser(measurements_save_path)
 
     if not output_dir and not measurements_save_path:
         raise ValueError(

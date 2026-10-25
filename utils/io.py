@@ -17,13 +17,19 @@ def resolve_model_paths(
     Resolves model paths, handling both sharded and single-file models.
     Returns: index_path, model_dir, weight_map, shards
     """
-    index_path = cached_file(model_id, "model.safetensors.index.json")
+    try:
+        index_path = cached_file(model_id, "model.safetensors.index.json")
+    except OSError:
+        index_path = None
     model_dir = None
     weight_map = {}
 
     if not index_path:
         # Fallback for non-sharded models (single file)
-        single_file = cached_file(model_id, "model.safetensors")
+        try:
+            single_file = cached_file(model_id, "model.safetensors")
+        except OSError:
+            single_file = None
         if single_file:
             print("Model is not sharded (single file). Treating as single shard.")
             weight_map = {"model.safetensors": "model.safetensors"}
@@ -51,6 +57,7 @@ def resolve_model_paths(
         model_dir = Path(index_path).parent
 
     shards = sorted(list(set(weight_map.values())))
+    assert model_dir is not None, "unreachable: all branches set model_dir or raise"
     return index_path, model_dir, weight_map, shards
 
 

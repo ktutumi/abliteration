@@ -59,6 +59,8 @@ if __name__ == "__main__":
         precision = torch.bfloat16
     elif args.precision == "fp32":
         precision = torch.float32
+    else:
+        precision = torch.float16
 
     if args.load_in_4bit:
         quant_config = BitsAndBytesConfig(
@@ -107,9 +109,12 @@ if __name__ == "__main__":
             continue
         conversation.append({"role": "user", "content": prompt})
         toks = tokenizer.apply_chat_template(
-            conversation=conversation, add_generation_prompt=True, return_tensors="pt"
-        )
-        gen = model.generate(
+            conversation=conversation,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            return_dict=True,
+        )["input_ids"]
+        gen = model.generate(  # type: ignore[union-attr]  # quantizer が戻す型の絞り込みを pyright が解釈できない
             toks.to(model.device), streamer=streamer, max_new_tokens=args.max_new_tokens
         )
         decoded = tokenizer.batch_decode(
